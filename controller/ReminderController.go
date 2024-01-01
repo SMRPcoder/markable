@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/SMRPcoder/markable/database"
-	"github.com/SMRPcoder/markable/errorlog"
 	"github.com/SMRPcoder/markable/models"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -18,10 +17,10 @@ func AddRemainder(c *fiber.Ctx) error {
 		Time   time.Time `json:"time" validate:"required"`
 	}
 	if err := c.BodyParser(&reqReminder); err != nil {
-		return errorlog.Log_n_send(err.Error(), c, 400, err.Error())
+		return c.Status(400).JSON(fiber.Map{"message": "Error while Body parsing", "status": false})
 	}
 	if err := validate.Struct(reqReminder); err != nil {
-		return errorlog.Log_n_send(err.Error(), c, 400, err.Error())
+		return c.Status(206).JSON(fiber.Map{"message": err.Error(), "status": false})
 	}
 	var newReminder models.Reminder
 	newReminder.Remind = reqReminder.Remind
@@ -31,7 +30,7 @@ func AddRemainder(c *fiber.Ctx) error {
 	}
 	result := database.DB.Create(newReminder)
 	if result.Error != nil {
-		return errorlog.Log_n_send(result.Error.Error(), c, 400, result.Error.Error())
+		return c.Status(417).JSON(fiber.Map{"message": "Error while Creating Remainder", "status": false})
 	}
 	c.Status(200).JSON(fiber.Map{"message": "Reminder Created Successfully", "status": true})
 	return nil
@@ -43,15 +42,15 @@ func DeleteRemainder(c *fiber.Ctx) error {
 		Id uuid.UUID `json:"id" validate:"required"`
 	}
 	if err := c.BodyParser(&reminder); err != nil {
-		return errorlog.Log_n_send(err.Error(), c, 400, err.Error())
+		return c.Status(400).JSON(fiber.Map{"message": "Error while Body parsing", "status": false})
 	}
 	if err := validate.Struct(reminder); err != nil {
-		return errorlog.Log_n_send(err.Error(), c, 400, err.Error())
+		return c.Status(206).JSON(fiber.Map{"message": err.Error(), "status": false})
 	}
 
 	result := database.DB.Delete(&models.Reminder{}, reminder.Id)
 	if result.Error != nil {
-		return errorlog.Log_n_send(result.Error.Error(), c, 400, result.Error.Error())
+		return c.Status(400).JSON(fiber.Map{"message": "Error while Delete", "status": false})
 	}
 	c.Status(200).JSON(fiber.Map{"message": "Deleted Successfuly", "status": true})
 	return nil

@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/SMRPcoder/markable/database"
-	"github.com/SMRPcoder/markable/errorlog"
 	"github.com/SMRPcoder/markable/functions"
 	"github.com/SMRPcoder/markable/models"
 	"github.com/go-playground/validator/v10"
@@ -23,7 +22,7 @@ func Register(c *fiber.Ctx) error {
 	userresult := database.DB.Where("username= ?", user.Username).Take(&thisuser)
 	if errors.Is(userresult.Error, gorm.ErrRecordNotFound) {
 		if err := validate.Struct(user); err != nil {
-			return errorlog.Log_n_send(err.Error(), c, 400, err.Error())
+			return c.Status(206).JSON(fiber.Map{"message": err.Error(), "status": false})
 		}
 		result := database.DB.Create(&user)
 		if result.Error != nil {
@@ -48,14 +47,14 @@ func Login(c *fiber.Ctx) error {
 	}
 	var user models.User
 	if err := c.BodyParser(&requser); err != nil {
-		return errorlog.Log_n_send(err.Error(), c, 500, err.Error())
+		return c.Status(400).JSON(fiber.Map{"message": "Error while Body parsing", "status": false})
 	}
 	if err := validate.Struct(requser); err != nil {
-		return errorlog.Log_n_send(err.Error(), c, 500, err.Error())
+		return c.Status(206).JSON(fiber.Map{"message": err.Error(), "status": false})
 	}
 	result := database.DB.Where("username= ?", requser.Username).First(&user)
 	if result.Error != nil {
-		return errorlog.Log_n_send(result.Error.Error(), c, 400, result.Error.Error())
+		return c.Status(417).JSON(fiber.Map{"message": result.Error.Error(), "status": false})
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(requser.Password)); err != nil {
 		return c.Status(200).JSON(fiber.Map{"message": err.Error(), "status": false})
