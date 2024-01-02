@@ -22,9 +22,14 @@ func main() {
 	todoRoutes := app.Group("/todo", middleware.Authenticate)
 	todoRoutes.Post("/add", controller.AddTodo)
 	todoRoutes.Post("/changeStatus", controller.ChangeStatus)
-	todoRoutes.Post("/delete", controller.DeleteTodo)
+	todoRoutes.Delete("/delete", controller.DeleteTodo)
 	todoRoutes.Post("/deleteCompleted", controller.DeleteAllCompleted)
-	todoRoutes.Post("/viewAll", controller.ViewAllTodos)
+	todoRoutes.Get("/viewAll", controller.ViewAllTodos)
+
+	reminderRoutes := app.Group("/reminder", middleware.Authenticate)
+	reminderRoutes.Post("/add", controller.AddRemainder)
+	reminderRoutes.Delete("/delete", controller.DeleteRemainder)
+	reminderRoutes.Get("/viewAll", controller.ViewAllReminder)
 
 	app.Listen(":5000")
 }

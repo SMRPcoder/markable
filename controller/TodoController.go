@@ -59,7 +59,7 @@ func DeleteTodo(c *fiber.Ctx) error {
 }
 
 func DeleteAllCompleted(c *fiber.Ctx) error {
-	result := database.DB.Where("finished = ?", true).Delete(&models.User{})
+	result := database.DB.Where("finished = ?", true).Delete(&models.Todo{})
 	if result.Error != nil {
 		return c.Status(400).JSON(fiber.Map{"message": result.Error.Error(), "status": false})
 	}
